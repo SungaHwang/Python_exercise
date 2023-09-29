@@ -5,6 +5,15 @@ print (f"PyTorch version:{torch.__version__}")
 print(f"MPS 장치를 지원하도록 build 되었는지: {torch.backends.mps.is_built()}")
 print(f"MPS 장치가 사용 가능한지: {torch.backends.mps.is_available()}") 
 
+device = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
+print(f"Using {device} device")
+
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets
