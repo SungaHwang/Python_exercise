@@ -4,4 +4,3 @@
 * Jump to Python
 * BeakJoon
 * Crwaling
-* Pytorch tutorials
