@@ -1,103 +1,77 @@
+#import sys
+#f = sys.stdin
+
+from collections import deque
+
 f = open('13460.txt')
+n, m = (map(int, f.readline().rstrip().split()))
 
-A, B = (map(int, f.readline().rstrip().split()))
-# print(A)
-# print(B)
+board = [list(input().rstrip()) for _ in range(n)]
+visited = []
 
-# for i in range(0, A):
-#     T = list((f.readline().rstrip()))
-#     if 'R' in T:
-#         print(i+1)
-#     if 'O' in T:
-#         print(i+1)
-#     if 'B' in T:
-#         print(i+1)
-    # print(T)
+dx = [1, -1, 0, 0]
+dy = [0, 0, -1, 1]
+cnt = 0
 
-T = []
+def getPos():
+    rx, ry, bx, by = 0, 0, 0, 0
+    for x in range(n):
+        for y in range(m):
+            if board[x][y] == "R":
+                rx, ry = x, y
+            if board[x][y] == "B":
+                bx, by = x, y
+    return rx, ry, bx, by
 
-for i in range(0, A):
-    L = list((f.readline().rstrip()))
-    T.append(L)
-print(T)
 
-for i in range(0, A):
-    X_O, Y_O, X_R, Y_R, X_B, Y_B = 0, 0, 0, 0, 0, 0
-
-    if 'O' in T[i]:
-        Y_O = i
-        X_O = T[i].index('O')
-        # print(X_O)
-        # print(Y_O)
+def move(x, y, dx, dy):
+    cnt = 0
+    # 이동하는 위치가 벽이아니고, 구멍에 들어가지 않을 동안 반복
+    while board[x + dx][y + dy] != "#" and board[x][y] != "O":
+        x += dx
+        y += dy
+        cnt +=1
+    return x, y, cnt
     
-    if 'B' in T[i]:
-        Y_B = i
-        X_B = T[i].index('B')
+def bfs():
+    rx, ry, bx, by = getPos()
 
-    if 'R' in T[i]:
-        Y_R = i
-        X_R = T[i].index('R')
-        # print(X_R)
-        # print(Y_R)
-            
-        try_num = 0
-        turn = 0
+    q = deque()
+    q.append((rx, ry, bx, by, 1))
+    visited.append((rx, ry, bx, by))
 
-        while True:
-            count_R = 0
+    while q:
+        rx, ry, bx, by, result = q.popleft()
 
-            if '.' == T[Y_R -1][X_R]:
-                print('. on the up side -> current coordinate : ', X_R, Y_R )
-                count_R +=1
-                T[Y_R][X_R] = '#'
-                Y_R = Y_R -1
-                try_num +=1
-                # if try_num == 10:
-                #     print(-1)
-                #     break
-                if T[Y_R -1][X_R] == '#':
-                    turn += 1
+        if result > 10:
+            break
 
-            elif '.' == T[Y_R +1][X_R]:
-                print('. on the down side -> current coordinate : ', X_R, Y_R )
-                count_R +=1
-                T[Y_R][X_R] = '#'
-                Y_R = Y_R +1
-                try_num +=1
-                # if try_num == 10:
-                #     print(-1)
-                #     break
-                if T[Y_R +1][X_R] == '#':
-                    turn += 1
+        for i in range(4):
+            nrx, nry, rcnt = move(rx, ry, dx[i], dy[i])
+            nbx, nby, bcnt = move(bx, by, dx[i], dy[i])
 
-            elif '.' == T[Y_R][X_R +1]:
-                print('. on the right side -> current coordinate : ', X_R, Y_R )
-                count_R +=1
-                T[Y_R][X_R] = '#'
-                X_R = X_R +1
-                try_num +=1
-                # if try_num == 10:
-                #     print(-1)
-                #     break
-                if T[Y_R][X_R +1] == '#':
-                    turn += 1
+            # 파란 구슬이 구멍에 들어갈 경우
+            if board[nbx][nby] == "O":
+                continue
 
-            elif '.' == T[Y_R][X_R -1]:
-                print('. on the left side -> current coordinate : ', X_R, Y_R )
-                count_R +=1
-                T[Y_R][X_R] = '#'
-                X_R = X_R -1
-                try_num += 1
-                # if try_num == 10:
-                #     print(-1)
-                #     break
-                if T[Y_R][X_R -1] == '#':
-                    turn +=1
+            # 빨간 구슬이 들어갈 경우 성공
+            if board[nrx][nry] == "O":
+                print(result)
+                return
 
-            else:
-                try_num += 1
-                turn +=1
-                break
+            # 둘이 겹쳐있을경우 더 많이 이동한 것을 1칸 뒤로 보낸다.
+            if nrx == nbx and nry == nby:
+                if rcnt > bcnt:
+                    nrx -= dx[i]
+                    nry -= dy[i]
+                else:
+                    nbx -= dx[i]
+                    nby -= dy[i]
 
-        print(try_num)
-        print(turn)
+            # 탐색하지 않은 방향 탐색
+            if (nrx, nry, nbx, nby) not in visited:
+                visited.append((nrx, nry, nbx, nby))
+                q.append((nrx, nry, nbx, nby, result + 1))
+    print(-1)
+
+bfs()
